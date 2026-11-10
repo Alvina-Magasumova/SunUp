@@ -1,0 +1,17 @@
+.git/
+.gitignore
+venv/
+.venv/
+env/
+__pycache__/
+*.py[cod]
+*.log
+sunup.log
+.env
+*.env
+.pytest_cache/
+.coverage
+celerybeat-schedule*
+.idea/
+.vscode/
+postgres_data/
