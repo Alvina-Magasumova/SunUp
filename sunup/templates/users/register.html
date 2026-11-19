@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-5">
+        <div class="card card-hover border-0 shadow-lg p-4">
+            <div class="card-body">
+                <h2 class="text-center mb-4">Регистрация в SunUp</h2>
+
+                <form id="registerForm">
+                    <div class="mb-3">
+                        <label class="form-label">Имя пользователя</label>
+                        <input type="text" class="form-control" id="username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Пароль</label>
+                        <input type="password" class="form-control" id="password" required minlength="8">
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label">Подтвердите пароль</label>
+                        <input type="password" class="form-control" id="password_confirm" required minlength="8">
+                    </div>
+                    <button type="submit" class="btn btn-warning w-100 btn-hover">Зарегистрироваться</button>
+                </form>
+
+                <!-- Блок для ошибок -->
+                <div id="errorMessage" class="alert alert-danger mt-3 d-none"></div>
+
+                <div class="text-center mt-3">
+                    <small>Уже есть аккаунт? <a href="/api/login/">Войти</a></small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('registerForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const username = document.getElementById('username').value;
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const password_confirm = document.getElementById('password_confirm').value;
+    const errorDiv = document.getElementById('errorMessage');
+
+    errorDiv.classList.add('d-none');
+
+    try {
+        // 1. Регистрация
+        const regResponse = await fetch('/api/auth/register/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, email, password, password_confirm })
+        });
+
+        if (!regResponse.ok) {
+            const err = await regResponse.json();
+            const errorText = Object.values(err).flat().join(' ');
+            throw new Error(errorText || 'Ошибка регистрации');
+        }
+
+        // 2. Если регистрация успешна — сразу логинимся
+        const loginResponse = await fetch('/api/token/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
+
+        if (!loginResponse.ok) {
+            throw new Error('Аккаунт создан, но не удалось войти. Попробуйте войти вручную.');
+        }
+
+        const loginData = await loginResponse.json();
+
+        // 3. Сохраняем токен и переходим в профиль
+        localStorage.setItem('access_token', loginData.access);
+        localStorage.setItem('refresh_token', loginData.refresh);
+
+        window.location.href = '/api/profile/';
+
+    } catch (error) {
+        errorDiv.textContent = error.message;
+        errorDiv.classList.remove('d-none');
+    }
+});
+</script>
+{% endblock %}

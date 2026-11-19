@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SunUp - Утренний дайджест</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Наши кастомные стили и анимации -->
+    <style>
+        body {
+            background: linear-gradient(135deg, #e0f7fa 0%, #ffccbc 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .card-hover {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+        }
+        .btn-hover {
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+        .btn-hover:hover {
+            transform: scale(1.05);
+        }
+        .form-control:focus {
+            border-color: #ff9800;
+            box-shadow: 0 0 0 0.2rem rgba(255, 152, 0, 0.25);
+        }
+        .navbar-custom {
+            background-color: rgba(255, 255, 255, 0.8) !important;
+            backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Шапка сайта (Навигация) -->
+    <nav class="navbar navbar-expand-lg navbar-light navbar-custom shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/">☀️ SunUp</a>
+            <div class="d-flex">
+                <a href="/login/" class="btn btn-outline-dark me-2 btn-hover">Войти</a>
+                <a href="/register/" class="btn btn-warning btn-hover">Регистрация</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Основной контент. Сюда будут вставляться страницы (login, главная и т.д.) -->
+    <div class="container mt-5">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Блок для скриптов -->
+    {% block scripts %}{% endblock %}
+</body>
+</html>

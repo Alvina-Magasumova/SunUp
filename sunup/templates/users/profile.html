@@ -1,0 +1,205 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-8">
+        <div class="card card-hover border-0 shadow-lg p-4">
+            <div class="card-body">
+                <h2 class="mb-4">Личный кабинет</h2>
+
+                <!-- Данные, только для чтения -->
+                <div id="profileData">
+                    <p><strong>Имя пользователя:</strong> <span id="username"></span></p>
+                </div>
+
+                <hr>
+
+                <!-- Общая форма настроек -->
+                <h4>Настройки</h4>
+                <form id="settingsForm">
+                    <div class="mb-3">
+                        <label class="form-label">Email для рассылки</label>
+                        <input type="email" id="newEmail" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Город</label>
+                        <input type="text" id="newCity" class="form-control" placeholder="Например: Москва" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Время отправки</label>
+                            <input type="time" id="newTime" class="form-control" required>
+                        </div>
+                        <div class="col-md-6 mb-3 d-flex align-items-end">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="newSubscription">
+                                <label class="form-check-label" for="newSubscription">Получать рассылки</label>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-warning btn-hover">Сохранить настройки</button>
+                </form>
+
+                <hr class="my-4">
+
+                <!-- Выбор тем -->
+                <h4>Интересующие темы</h4>
+                <form id="topicsForm">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="Технологии" id="topic-tech">
+                        <label class="form-check-label" for="topic-tech">Технологии</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="Наука" id="topic-science">
+                        <label class="form-check-label" for="topic-science">Наука</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="Спорт" id="topic-sport">
+                        <label class="form-check-label" for="topic-sport">Спорт</label>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" value="Главное" id="topic-general">
+                        <label class="form-check-label" for="topic-general">Главное</label>
+                    </div>
+                    <button type="submit" class="btn btn-warning btn-hover">Обновить темы</button>
+                </form>
+
+                <div class="mt-4">
+                    <button id="logoutBtn" class="btn btn-outline-danger btn-hover">Выйти</button>
+                </div>
+
+                <!-- Блок ошибок -->
+                <div id="errorMessage" class="alert alert-danger mt-3 d-none"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const token = localStorage.getItem('access_token');
+
+// --- 1. Загрузка профиля ---
+async function loadProfile() {
+    if (!token) {
+        window.location.href = '/api/login/';
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/me/', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (response.status === 401) {
+            localStorage.removeItem('access_token');
+            window.location.href = '/api/login/';
+            return;
+        }
+
+        const data = await response.json();
+
+        document.getElementById('username').textContent = data.username;
+        document.getElementById('newEmail').value = data.email || '';
+        document.getElementById('newCity').value = data.city_name || '';
+        document.getElementById('newTime').value = data.morning_time ? data.morning_time.slice(0, 5) : '08:00';
+        document.getElementById('newSubscription').checked = data.is_digest_enabled;
+
+        // Отмечаем чекбоксы тем
+        const topicSlugs = ['technology', 'science', 'sport', 'general'];
+        // Мы не знаем slug'и из API напрямую (там названия), поэтому пока просто снимаем все галочки.
+        // В будущем можно сопоставить. Пока оставим простую логику: если тема есть в списке, ставим галочку.
+        const userTopics = data.topics.map(t => t.toLowerCase()); // "технологии" -> "технологии"
+        // Простая эвристика для демо:
+        document.getElementById('topic-tech').checked = userTopics.some(t => t.includes('технолог'));
+        document.getElementById('topic-science').checked = userTopics.some(t => t.includes('наук'));
+        document.getElementById('topic-sport').checked = userTopics.some(t => t.includes('спорт'));
+        document.getElementById('topic-general').checked = userTopics.some(t => t.includes('главн'));
+
+    } catch (error) {
+        document.getElementById('errorMessage').textContent = 'Ошибка загрузки профиля';
+        document.getElementById('errorMessage').classList.remove('d-none');
+    }
+}
+
+// --- 2. Сохранение общих настроек ---
+document.getElementById('settingsForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('newEmail').value;
+    const city = document.getElementById('newCity').value;
+    const time = document.getElementById('newTime').value;
+    const isSubscribed = document.getElementById('newSubscription').checked;
+
+    // 2.1 Обновляем город (через отдельный эндпоинт)
+    const cityResponse = await fetch('/api/me/city/', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ city_name: city })
+    });
+
+    if (!cityResponse.ok) {
+        const err = await cityResponse.json();
+        alert('Ошибка города: ' + (err.error || 'неизвестно'));
+        return;
+    }
+
+    // 2.2 Обновляем остальное (email, время, подписка)
+    const settingsResponse = await fetch('/api/me/', {
+        method: 'PATCH',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            email: email,
+            morning_time: time + ":00",
+            is_digest_enabled: isSubscribed
+        })
+    });
+
+    if (settingsResponse.ok) {
+        alert('Настройки сохранены!');
+        loadProfile(); // Обновляем данные
+    } else {
+        const err = await settingsResponse.json();
+        alert('Ошибка настроек: ' + JSON.stringify(err));
+    }
+});
+
+// --- 3. Сохранение тем ---
+document.getElementById('topicsForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    // Карта перевода русских названий в английские slug'и
+    const map = {
+        'Технологии': 'technology',
+        'Наука': 'science',
+        'Спорт': 'sport',
+        'Главное': 'general'
+    };
+
+    const checkedBoxes = document.querySelectorAll('#topicsForm input[type="checkbox"]:checked');
+    const selected = Array.from(checkedBoxes).map(cb => map[cb.value]);
+
+    const response = await fetch('/api/me/topics/', {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topics: selected })
+    });
+
+    if (response.ok) {
+        alert('Темы обновлены!');
+    } else {
+        const err = await response.json();
+        alert('Ошибка обновления тем: ' + (err.error || 'неизвестно'));
+    }
+});
+
+// --- 4. Выход ---
+document.getElementById('logoutBtn').addEventListener('click', () => {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    window.location.href = '/api/'; // На главную страницу
+});
+
+document.addEventListener('DOMContentLoaded', loadProfile);
+</script>
+{% endblock %}

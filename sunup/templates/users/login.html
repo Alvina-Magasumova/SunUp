@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-5">
+        <div class="card card-hover border-0 shadow-lg p-4">
+            <div class="card-body">
+                <h2 class="text-center mb-4">Вход в SunUp</h2>
+
+                <!-- Форма логина -->
+                <form id="loginForm">
+                    <div class="mb-3">
+                        <label class="form-label">Имя пользователя</label>
+                        <input type="text" class="form-control" id="username" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label">Пароль</label>
+                        <input type="password" class="form-control" id="password" required>
+                    </div>
+                    <button type="submit" class="btn btn-warning w-100 btn-hover">Войти</button>
+                </form>
+
+                <!-- Блок для вывода ошибок -->
+                <div id="errorMessage" class="alert alert-danger mt-3 d-none"></div>
+
+                <div class="text-center mt-3">
+                    <small>Нет аккаунта? <a href="/register/">Зарегистрироваться</a></small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault(); // Останавливаем перезагрузку страницы
+
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    const errorDiv = document.getElementById('errorMessage');
+
+    // Скрываем старую ошибку
+    errorDiv.classList.add('d-none');
+
+    try {
+        // Отправляем запрос к нашему DRF API
+        const response = await fetch('/api/token/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: username, password: password })
+        });
+
+        if (!response.ok) {
+            throw new Error('Неверный логин или пароль');
+        }
+
+        const data = await response.json();
+
+        // Сохраняем токен в браузере
+        localStorage.setItem('access_token', data.access);
+        localStorage.setItem('refresh_token', data.refresh);
+
+        // Пока просто выводим сообщение об успехе (потом сделаем редирект)
+        window.location.href = '/api/profile/'; // Перекидываем на профиль
+
+    } catch (error) {
+        errorDiv.textContent = error.message;
+        errorDiv.classList.remove('d-none');
+    }
+});
+</script>
+{% endblock %}

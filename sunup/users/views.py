@@ -10,6 +10,7 @@ from .serializers import UserRegistrationSerializer, UserProfileSerializer, Topi
 from .models import Topic
 from .services.geocoding import fetch_city_coordinates
 from asgiref.sync import async_to_sync
+from django.shortcuts import render
 
 
 class RegisterView(APIView):
@@ -151,3 +152,16 @@ class SetCityView(APIView):
             'latitude': request.user.city_latitude,
             'longitude': request.user.city_longitude,
         })
+
+def index_page(request):
+    return render(request, 'sunup/index.html')
+
+def login_page(request):
+    # Просто отдаем HTML, данные будут грузиться через JS
+    return render(request, 'users/login.html')
+
+def register_page(request):
+    return render(request, 'users/register.html')
+
+def profile_page(request):
+    return render(request, 'users/profile.html')
