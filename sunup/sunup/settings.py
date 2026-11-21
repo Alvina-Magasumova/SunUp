@@ -14,6 +14,7 @@ from pathlib import Path
 from datetime import timedelta
 from celery.schedules import crontab
 import os
+from decouple import config, Csv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -23,12 +24,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-38n9-4@#yu7fh-bofezcci1vbic-tyv-+$41dl*bct0qki(s+k'
+SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='127.0.0.1,localhost', cast=Csv())
 
 
 # Application definition
@@ -84,11 +85,11 @@ WSGI_APPLICATION = 'sunup.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME', 'sunup'),
-        'USER': os.getenv('DB_USER', 'postgres'),
-        'PASSWORD': os.getenv('DB_PASSWORD', 'postgres'),
-        'HOST': os.getenv('DB_HOST', 'localhost'),  # В Docker это будет 'db'
-        'PORT': os.getenv('DB_PORT', '5432'),
+        'NAME': config('DB_NAME', default='sunup'),
+        'USER': config('DB_USER', default='postgres'),
+        'PASSWORD': config('DB_PASSWORD', default='postgres'),
+        'HOST': config('DB_HOST', default='localhost'),
+        'PORT': config('DB_PORT', default='5432'),
     }
 }
 
@@ -165,11 +166,11 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
 
 # Яндекс Погода
-YANDEX_WEATHER_API_KEY = '7596092d-4888-491c-951f-c606a28bf2ae'
+YANDEX_WEATHER_API_KEY = config('YANDEX_WEATHER_API_KEY', default='')
 
 # GigaChat
-GIGACHAT_CREDENTIALS = 'MDFhMTcyZjAtMzM1OS03ZTA2LThiNzctN2EwZmEwMGIxYjA5OjQ3NWJmZTI3LTFlM2ItNDNjZS1hN2Y2LWY1NWZiNzAyZGU3Mg=='
-GIGACHAT_MODEL = 'GigaChat-2'
+GIGACHAT_CREDENTIALS = config('GIGACHAT_CREDENTIALS', default='')
+GIGACHAT_MODEL = config('GIGACHAT_MODEL', default='GigaChat-2')
 
 CELERY_BEAT_SCHEDULE = {
     'check-morning-users-every-minute': {
@@ -179,17 +180,16 @@ CELERY_BEAT_SCHEDULE = {
 }
 
 # Email
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-DEFAULT_FROM_EMAIL = 'noreply@sunup.local'
-
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.yandex.ru'
 EMAIL_PORT = 465
 EMAIL_USE_SSL = True
 EMAIL_USE_TLS = False
-EMAIL_HOST_USER = 'SunUp alvinamagasumova@yandex.ru'
-EMAIL_HOST_PASSWORD = 'qrgvlqyuvblaarwe'
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+# Секреты берем из .env
+EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@sunup.local')
 
 # Автоматически создаем папку для логов, если ее нет
 LOGS_DIR = os.path.join(BASE_DIR, 'logs')
