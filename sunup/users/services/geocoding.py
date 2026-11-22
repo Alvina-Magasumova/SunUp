@@ -35,4 +35,5 @@ async def fetch_city_coordinates(city_name: str) -> Optional[dict]:
         "latitude": first["latitude"],
         "longitude": first["longitude"],
         "country": first.get("country", ""),
+        "timezone": first.get("timezone", "Europe/Moscow"),
     }

@@ -144,13 +144,15 @@ class SetCityView(APIView):
         request.user.city_name = coordinates['name']
         request.user.city_latitude = coordinates['latitude']
         request.user.city_longitude = coordinates['longitude']
-        request.user.save(update_fields=['city_name', 'city_latitude', 'city_longitude'])
+        request.user.timezone = coordinates.get('timezone', 'Europe/Moscow')
+        request.user.save(update_fields=['city_name', 'city_latitude', 'city_longitude', 'timezone'])
 
         return Response({
             'status': 'ok',
             'city_name': request.user.city_name,
             'latitude': request.user.city_latitude,
             'longitude': request.user.city_longitude,
+            'timezone': request.user.timezone,
         })
 
 def index_page(request):
