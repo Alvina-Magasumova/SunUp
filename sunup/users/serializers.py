@@ -24,17 +24,25 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
-        """Создаём пользователя с захешированным паролем"""
-        # Убираем password_confirm — его нет в модели
+        """Создаём пользователя и отправляем письмо для подтверждения."""
         validated_data.pop('password_confirm')
 
-        # create_user сам захеширует пароль
+        # Создаем пользователя (is_email_verified по умолчанию False)
         user = User.objects.create_user(
             username=validated_data['username'],
             email=validated_data['email'],
             password=validated_data['password'],
-            is_email_verified=True,
         )
+
+        # Отправляем письмо с подтверждением
+        # Нам нужен request, поэтому мы передадим его из вьюхи (см. Шаг 2)
+        if 'request' in self.context:
+            from .utils import send_verification_email
+            try:
+                send_verification_email(self.context['request'], user)
+            except Exception as e:
+                print(f"ОШИБКА ОТПРАВКИ ПИСЬМА: {e}")
+
         return user
 
 

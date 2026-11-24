@@ -15,4 +15,7 @@ urlpatterns = [
     # Swagger / OpenAPI
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+
+    # Фронтенд
+    path('', include('users.urls_frontend')),
 ]

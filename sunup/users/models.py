@@ -33,6 +33,19 @@ class User(AbstractUser):
     def __str__(self):
         return f'{self.username} ({"активен" if self.is_digest_enabled else "пауза"})'
 
+    def generate_verification_token(self):
+        """Создает токен для подтверждения email, живущий 24 часа."""
+        from django.core import signing
+        from django.utils import timezone
+
+        # Токен содержит ID пользователя и время создания
+        data = {
+            'user_id': self.pk,
+            'timestamp': timezone.now().timestamp(),
+        }
+        # sign.dumps создает криптографически подписанную строку
+        return signing.dumps(data, salt='email-verify')
+
 
 class Topic(models.Model):
     """Справочник тем новостей"""

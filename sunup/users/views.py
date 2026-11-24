@@ -11,6 +11,9 @@ from .models import Topic
 from .services.geocoding import fetch_city_coordinates
 from asgiref.sync import async_to_sync
 from django.shortcuts import render
+from django.core import signing
+
+
 
 
 class RegisterView(APIView):
@@ -23,7 +26,7 @@ class RegisterView(APIView):
         description='Регистрация нового пользователя. Возвращает id, username, email.',
     )
     def post(self, request):
-        serializer = UserRegistrationSerializer(data=request.data)
+        serializer = UserRegistrationSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             user = serializer.save()
             return Response(
@@ -167,3 +170,32 @@ def register_page(request):
 
 def profile_page(request):
     return render(request, 'users/profile.html')
+
+
+def verify_email(request):
+    """Эндпоинт для подтверждения email по ссылке из письма."""
+    token = request.GET.get('token')
+
+    if not token:
+        return render(request, 'users/verify_failed.html', {'error': 'Токен не найден'})
+
+    try:
+        # Расшифровываем токен (срок жизни 24 часа = 86400 секунд)
+        data = signing.loads(token, salt='email-verify', max_age=86400)
+    except signing.SignatureExpired:
+        return render(request, 'users/verify_failed.html', {'error': 'Срок действия ссылки истек'})
+    except signing.BadSignature:
+        return render(request, 'users/verify_failed.html', {'error': 'Неверная ссылка'})
+
+    from .models import User
+    try:
+        user = User.objects.get(pk=data['user_id'])
+    except User.DoesNotExist:
+        return render(request, 'users/verify_failed.html', {'error': 'Пользователь не найден'})
+
+    # Подтверждаем почту
+    if not user.is_email_verified:
+        user.is_email_verified = True
+        user.save(update_fields=['is_email_verified'])
+
+    return render(request, 'users/verify_success.html', {'user': user})

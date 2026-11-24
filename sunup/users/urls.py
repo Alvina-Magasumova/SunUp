@@ -1,7 +1,7 @@
 from django.urls import path
 
 from .views import RegisterView, MeView, TopicListView, SetTopicsView, SetCityView, \
-    index_page, login_page, register_page, profile_page
+    index_page, login_page, register_page, profile_page, verify_email
 
 
 urlpatterns = [
@@ -14,4 +14,5 @@ urlpatterns = [
     path('login/', login_page, name='login-page'),
     path('register/', register_page, name='register-page'),
     path('profile/', profile_page, name='profile-page'),
+    path('verify/', verify_email, name='verify-email'),
 ]
