@@ -63,7 +63,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
         localStorage.setItem('refresh_token', data.refresh);
 
         // Пока просто выводим сообщение об успехе (потом сделаем редирект)
-        window.location.href = '/api/profile/'; // Перекидываем на профиль
+        window.location.href = '/profile/'; // Перекидываем на профиль
 
     } catch (error) {
         errorDiv.textContent = error.message;

@@ -1,5 +1,4 @@
 {% extends 'base.html' %}
-
 {% block content %}
 <div class="row justify-content-center mt-5">
     <div class="col-md-8">
@@ -28,7 +27,11 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Время отправки</label>
-                            <input type="time" id="newTime" class="form-control" required>
+                            <div class="d-flex align-items-center gap-2">
+                                <select id="hour-select" class="form-select"></select>
+                                <span class="fw-bold">:</span>
+                                <select id="minute-select" class="form-select"></select>
+                            </div>
                         </div>
                         <div class="col-md-6 mb-3 d-flex align-items-end">
                             <div class="form-check">
@@ -74,6 +77,17 @@
 {% block scripts %}
 <script>
 const token = localStorage.getItem('access_token');
+const hourSelect = document.getElementById('hour-select');
+const minuteSelect = document.getElementById('minute-select');
+
+for (let h = 0; h < 24; h++) {
+    const val = String(h).padStart(2, '0');
+    hourSelect.add(new Option(val, val));
+}
+for (let m = 0; m < 60; m++) {
+    const val = String(m).padStart(2, '0');
+    minuteSelect.add(new Option(val, val));
+}
 
 // --- 1. Загрузка профиля ---
 async function loadProfile() {
@@ -98,7 +112,9 @@ async function loadProfile() {
         document.getElementById('username').textContent = data.username;
         document.getElementById('newEmail').value = data.email || '';
         document.getElementById('newCity').value = data.city_name || '';
-        document.getElementById('newTime').value = data.morning_time ? data.morning_time.slice(0, 5) : '08:00';
+        const [h, m] = (data.morning_time || '08:00').split(':');
+        hourSelect.value = h;
+        minuteSelect.value = m;
         document.getElementById('newSubscription').checked = data.is_digest_enabled;
 
         // Отмечаем чекбоксы тем
@@ -119,7 +135,7 @@ document.getElementById('settingsForm').addEventListener('submit', async (e) => 
 
     const email = document.getElementById('newEmail').value;
     const city = document.getElementById('newCity').value;
-    const time = document.getElementById('newTime').value;
+    const time = `${hourSelect.value}:${minuteSelect.value}`;
     const isSubscribed = document.getElementById('newSubscription').checked;
 
     // 2.1 Обновляем город

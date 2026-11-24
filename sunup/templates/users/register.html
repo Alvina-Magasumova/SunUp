@@ -83,7 +83,7 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
         localStorage.setItem('access_token', loginData.access);
         localStorage.setItem('refresh_token', loginData.refresh);
 
-        window.location.href = '/api/profile/';
+        window.location.href = '/profile/';
 
     } catch (error) {
         errorDiv.textContent = error.message;

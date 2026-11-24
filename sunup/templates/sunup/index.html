@@ -1,20 +1,20 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="row align-items-center mt-5">
-    <div class="col-md-6">
-        <h1 class="display-4 fw-bold">Начни утро с <span class="text-warning">SunUp</span></h1>
-        <p class="lead mt-3">Персональный дайджест погоды и новостей с настроением, сгенерированным ИИ. Приходит на почту каждое утро в удобное время.</p>
-        <div class="mt-4">
-            <a href="/api/register/" class="btn btn-warning btn-lg btn-hover">Зарегистрироваться</a>
-            <a href="/api/login/" class="btn btn-outline-dark btn-lg ms-2 btn-hover">Войти в кабинет</a>
+<div class="row align-items-center g-4 mt-2 mt-md-5 pb-4">
+    <div class="col-md-6 text-center text-md-start">
+        <h1 class="display-5 display-md-4 fw-bold">Начни утро с <span class="text-warning">SunUp</span></h1>
+        <p class="fs-5 text-muted mt-3">Персональный дайджест погоды и новостей с настроением, сгенерированным ИИ. Приходит на почту каждое утро в удобное время.</p>
+        <div class="d-grid d-sm-flex gap-2 justify-content-center justify-content-md-start mt-4">
+            <a href="/register/" class="btn btn-warning btn-lg btn-hover">Зарегистрироваться</a>
+            <a href="/login/" class="btn btn-outline-dark btn-lg btn-hover">Войти в кабинет</a>
         </div>
     </div>
-    <div class="col-md-6 text-center">
-        <div class="card card-hover border-0 shadow-lg p-4">
+    <div class="col-md-6">
+        <div class="card card-hover border-0 shadow-lg p-3 p-md-4">
             <div class="card-body">
-                <h4 class="card-title">☀️ Ваш утренний дайджест</h4>
-                <p class="card-text text-start mt-3">
+                <h4 class="card-title text-center text-md-start">☀️ Ваш утренний дайджест</h4>
+                <p class="card-text text-start mt-3 mb-0">
                     <strong>📍 Москва, +15°C</strong><br>
                     «Отличный день для прогулки!»<br><br>
                     📰 Главное за ночь:<br>

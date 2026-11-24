@@ -27,11 +27,17 @@ def build_digest_message(
             lines.append(f"")
             lines.append(f"▫️ {topic_name}:")
             for item in articles:
-                # Выводим заголовок и ссылку на следующей строке
                 lines.append(f"  • {item['title']}")
                 if item.get('link'):
                     lines.append(f"    {item['link']}")
     else:
         lines.append("📰 Новостей пока нет.")
+
+    lines.extend([
+        f"",
+        f"---",
+        f"⚙️ Изменить время рассылки, темы новостей или отписаться можно в личном кабинете:",
+        f"https://sunup-app.site/profile/",
+    ])
 
     return "\n".join(lines)
